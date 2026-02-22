@@ -1,0 +1,68 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: monolith-dr
+  namespace: cinemaabyss
+spec:
+  host: monolith
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 20
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: movies-dr
+  namespace: cinemaabyss
+spec:
+  host: movies-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 20s
+      maxEjectionPercent: 100
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: cinema-routing
+  namespace: cinemaabyss
+spec:
+  hosts:
+    - monolith.cinemaabyss.svc.cluster.local
+  http:
+    - match:
+        - uri:
+            prefix: /api/movies
+      route:
+        - destination:
+            host: movies-service
+          weight: 10
+        - destination:
+            host: monolith
+          weight: 90
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+      timeout: 5s
+
+    - route:
+        - destination:
+            host: monolith
