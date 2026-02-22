@@ -39,66 +39,40 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMovies(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	switch r.Method {
+	case http.MethodGet, http.MethodPost:
+		proxyRequest(w, r, moviesUrl, "/api/movies")
+	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	targetUrl := moviesUrl + "/api/movies"
-	log.Printf("TargetURL %s", targetUrl)
-	// Создаем новый GET-запрос к целевому API
-	req, err := http.NewRequest(http.MethodGet, targetUrl, nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Можно пробросить заголовки (например, Authorization)
-	req.Header = r.Header.Clone()
-
-	// Выполняем запрос
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadGateway)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Копируем заголовки ответа
-	for k, v := range resp.Header {
-		for _, vv := range v {
-			w.Header().Add(k, vv)
-		}
-	}
-
-	// Устанавливаем статус-код
-	w.WriteHeader(resp.StatusCode)
-
-	// Копируем тело ответа
-	_, err = io.Copy(w, resp.Body)
-	if err != nil {
-		log.Println("error copying response body:", err)
 	}
 }
 
 func handleUsers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	switch r.Method {
+	case http.MethodGet, http.MethodPost:
+		proxyRequest(w, r, monolithUrl, "/api/users")
+	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
 	}
-	targetUrl := monolithUrl + "/api/users"
-	log.Printf("TargetURL %s", targetUrl)
-	// Создаем новый GET-запрос к целевому API
-	req, err := http.NewRequest(http.MethodGet, targetUrl, nil)
+}
+
+func proxyRequest(w http.ResponseWriter, r *http.Request, targetBase string, path string) {
+	targetURL := targetBase + path
+	log.Printf("Proxying %s request to %s", r.Method, targetURL)
+
+	var body io.Reader
+	if r.Method == http.MethodPost {
+		body = r.Body
+	}
+
+	req, err := http.NewRequest(r.Method, targetURL, body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Можно пробросить заголовки (например, Authorization)
 	req.Header = r.Header.Clone()
 
-	// Выполняем запрос
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -107,19 +81,14 @@ func handleUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Копируем заголовки ответа
 	for k, v := range resp.Header {
 		for _, vv := range v {
 			w.Header().Add(k, vv)
 		}
 	}
 
-	// Устанавливаем статус-код
 	w.WriteHeader(resp.StatusCode)
-
-	// Копируем тело ответа
-	_, err = io.Copy(w, resp.Body)
-	if err != nil {
+	if _, err := io.Copy(w, resp.Body); err != nil {
 		log.Println("error copying response body:", err)
 	}
 }

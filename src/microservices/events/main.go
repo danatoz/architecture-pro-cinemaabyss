@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/IBM/sarama"
 )
@@ -57,6 +58,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleEventMovie(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Start %s /api/events/movie %s", r.Method, time.Now())
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -85,9 +87,11 @@ func handleEventMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status": "success",
 	})
+	log.Printf("Finish %s /api/events/movie %s", r.Method, time.Now())
 }
 
 func handleEventUser(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Start %s /api/events/user %s", r.Method, time.Now())
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -116,9 +120,11 @@ func handleEventUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status": "success",
 	})
+	log.Printf("Finish %s /api/events/user %s", r.Method, time.Now())
 }
 
 func handleEventPayment(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Start %s /api/events/payment %s", r.Method, time.Now())
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -149,4 +155,5 @@ func handleEventPayment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status": "success",
 	})
+	log.Printf("Finish %s /api/events/payment %s", r.Method, time.Now())
 }
