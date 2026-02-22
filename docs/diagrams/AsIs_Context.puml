@@ -1,0 +1,28 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Кинобездна — C4 Context Diagram (Текущее решение)
+
+Person(user, "Пользователь", "Смотрит видео, оформляет подписку, оценивает фильмы, управляет избранным")
+
+System_Boundary(cinema_boundary, "Кинобездна (текущий монолит)") {
+    System(cinema_system, "Монолитное приложение (Go)", "REST API.\nБизнес-логика: пользователи, видео, подписки, платежи, скидки, метаданные.\nСинхронные вызовы.\nИнтеграции с внешними системами")
+}
+
+System_Ext(recommendation_system, "Рекомендательная система", "Сторонняя система.\nФормирует персональные подборки")
+
+System_Ext(payment_systems, "Платёжные системы", "Внешние провайдеры платежей")
+
+System_Ext(loyalty_services, "Сервисы лояльности", "Начисление и использование бонусов/скидок")
+
+System_Ext(marketplaces, "Маркетплейсы", "Партнёрские интеграции и продажи подписок")
+System_Ext(online_cinemas, "Онлайн кинотеатры", "Внешние онлайн кинотеатры")
+
+Rel(user, cinema_system, "Использует через Web / Mobile / Smart TV", "HTTPS / REST")
+
+Rel(cinema_system, payment_systems, "Обработка платежей", "HTTPS (sync)")
+Rel(cinema_system, loyalty_services, "Проверка и применение скидок", "HTTPS (sync)")
+Rel(cinema_system, marketplaces, "Интеграция партнёрских подписок", "HTTPS (sync)")
+Rel(cinema_system, recommendation_system, "Получение рекомендаций", "RabbitMQ (async)")
+Rel_R(cinema_system, online_cinemas, "", "")
+@enduml

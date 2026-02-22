@@ -1,0 +1,65 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Кинобездна — C4 Container Diagram (To-Be, API Gateway)
+
+Person(user, "Пользователь", "Смотрит видео, управляет подпиской, оценивает фильмы")
+
+System_Boundary(cinema_boundary, "Кинобездна (To-Be)") {
+
+    Container(api_gateway, "API Gateway (Golang)", "Golang", "Единая точка входа.\nАутентификация, rate limiting, логирование.\nМаршрутизация к микросервисам.\nАдаптация под Web / Mobile / Smart TV")
+
+    Container(user_service, "User Service", "Go", "Пользователи, профили, избранное")
+
+    Container(subscription_service, "Subscription Service", "Go", "Подписки, тарифы, управление доступом")
+
+    Container(payment_service, "Payment Service", "Go", "Платежи, интеграция с внешними провайдерами")
+
+    Container(content_service, "Content Service", "Go", "Видео, метаданные (жанры, актёры, рейтинги)")
+
+    Container(discount_service, "Discount & Loyalty Service", "Go", "Скидки, бонусы, интеграция с программами лояльности")
+
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Данные пользователей")
+    ContainerDb(subscription_db, "Subscription DB", "PostgreSQL", "Данные подписок")
+    ContainerDb(payment_db, "Payment DB", "PostgreSQL", "История платежей")
+    ContainerDb(content_db, "Content DB", "PostgreSQL", "Видео и метаданные")
+    ContainerDb(discount_db, "Discount DB", "PostgreSQL", "Скидки и бонусы")
+
+    Container(message_broker, "Message Broker", "Kafka / RabbitMQ", "Асинхронное взаимодействие между сервисами (event-driven)")
+}
+
+System_Ext(recommendation_system, "Рекомендательная система", "Сторонний сервис персональных подборок")
+
+System_Ext(payment_systems, "Платёжные системы", "Внешние провайдеры платежей")
+
+System_Ext(loyalty_services, "Сервисы лояльности", "Внешние бонусные программы")
+
+System_Ext(marketplaces, "Маркетплейсы", "Партнёрские продажи подписок")
+
+Rel(user, api_gateway, "Использует", "HTTPS")
+
+Rel(api_gateway, user_service, "REST")
+Rel(api_gateway, subscription_service, "REST")
+Rel(api_gateway, content_service, "REST")
+Rel(api_gateway, payment_service, "REST")
+Rel(api_gateway, discount_service, "REST")
+
+Rel(user_service, user_db, "CRUD")
+Rel(subscription_service, subscription_db, "CRUD")
+Rel(payment_service, payment_db, "CRUD")
+Rel(content_service, content_db, "CRUD")
+Rel(discount_service, discount_db, "CRUD")
+
+Rel(payment_service, payment_systems, "Обработка платежей", "HTTPS")
+Rel(discount_service, loyalty_services, "Проверка/начисление бонусов", "HTTPS")
+Rel(subscription_service, marketplaces, "Проверка партнёрских подписок", "HTTPS")
+
+Rel(content_service, recommendation_system, "Получение рекомендаций", "API")
+
+Rel(subscription_service, message_broker, "Публикует события")
+Rel(payment_service, message_broker, "Публикует события")
+Rel(user_service, message_broker, "Публикует события")
+Rel(discount_service, message_broker, "Подписка / публикация")
+Rel(content_service, message_broker, "Подписка")
+
+@enduml
