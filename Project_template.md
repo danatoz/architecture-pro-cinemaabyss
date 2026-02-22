@@ -281,6 +281,8 @@ cat .docker/config.json | base64
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
 
 <img src="./docs/Снимок экрана_20260222_171752.png" width="600" height="400">
+<img src="./docs/Снимок экрана_20260222_205154.png" width="600" height="400">
+<img src="./docs/Снимок экрана_20260222_205326.png" width="1920" height="400">
 
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
@@ -355,6 +357,8 @@ minikube tunnel
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+
+<img src="./docs/Снимок экрана_20260222_214221.png" width="1920" height="1080">
 
 
 # Задание 5
